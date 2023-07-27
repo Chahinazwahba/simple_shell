@@ -1,134 +1,98 @@
 #include "shell.h"
 /**
- * chaing - test  current char
- * @info: the first param
- * @b: the second param
- * @d: the third param
- * Return: 1 if chain delimeter, 0 otherwise
+ * thehistory - Is displays history
+ *@info: first param
+ * Return: 0
 */
-int chaing(info_t *info, char *b, size_t *d)
+int thehistory(info_t *info)
 {
-size_t *x = *d;
-if (b[x] == '|' && b[x + 1] == '|')
-{
-b[x] = 0;
-x++;
-info->buffer_typcmd = CMD_OR;
-}
-else if (b[x] == '&' && b[x + 1] == '&')
-{
-b[x] = 0;
-x++;
-info->buffer_typcmd = CMD_AND;
-}
-else if (b[x] == ';')
-{
-b[x] = 0;
-info->buffer_typcmd = CMD_CHAIN;
-}
-else
+listprt(info->history);
 return (0);
-*d = x;
+}
+/**
+ *unset_alias - Is remove alias
+ *@info: first param
+ *@i: the second param
+ * Return: 0 on success, 1 on error
+*/
+int unset_alias(info_t *info, char *i)
+{
+char *y, c;
+int z;
+y = strchr(i, '=');
+if (!y)
 return (1);
+c = *y;
+*y = 0;
+z = index_dltnd(&(info->alias),
+index_nde(info->alias, strt_nde(info->alias, i, -1)));
+*y = c;
+return (z);
 }
 /**
- * chain_chk - If it countanue checks
+ * set_alias - IS sets alias
  * @info: first param
- * @b: the second param
- * @d: the third param
- * @i: the forth param
- * @l: the fifth param
- *Return: Void
+ *@i: the second param
+ * Return: 0 on success, 1 on error
 */
-void chain_chk(info_t *info, char *b, size_t *d, size_t i, size_t l)
+int set_alias(info_t *info, char *i)
 {
-size_t x = *d;
-
-if (info->buffer_typcmd == CMD_AND)
-{
-if (info->allstatus)
-{
-b[i] = 0;
-x = l;
-}
-}
-if (info->buffer_typcmd == CMD_OR)
-{
-if (!info->allstatus)
-{
-b[i] = 0;
-x = l;
-}
-}
-*d = x;
-}
-/**
- * alias_rpl - arr is replaced
- * @info: first param
- * Return: 1 if replaced, 0 otherwise
-*/
-int alias_rpl(info_t *info)
-{
-list_t *nd;
-int x;
-char *d;
-for (x = 0; x < 10; x++)
-nd = strt_nde(info->alias, info->argvarb[0], '=');
-if (!nd)
-return (0);
-free(info->argvarb[0]);
-d = strchr(nd->str, '=');
-if (!d)
-return (0);
-d = dplstring(d + 1);
-if (!d)
-return (0);
-info->argvarb[0] = d;
+char *y;
+y = strchr(i, '=');
+if (!y)
 return (1);
+if (!*++y)
+return (unset_alias(info, i));
+unset_alias(info, i);
+return (node_adend(&(info->alias), i, 0) == NULL);
 }
 /**
- * variable_rpl - Is replaces vars
- * @info: first param
- * Return: 1 if replaced, 0 otherwise
+ * _printal - Is prints a string
+ * @nd: the first param
+ * Return: 0 on success, 1 on error
 */
-int variable_rpl(info_t *info)
+int _printal(list_t *nd)
 {
-int x = 0;
-list_t *nd;
-for (x = 0; info->argvarb[x]; x++)
-{
-if (info->argvarb[x][0] != '$' || !info->argvarb[x][1])
-continue;
-if (!strcmp(info->argvarb[x], "$2"))
-string_rpl(&(info->argvarb[x]),
-dplstring(numcnv(info->allstatus, 10, 0)));
-continue;
-if (!strcmp(info->argvarb[x], "$$"))
-{
-string_rpl(&(info->argvarb[x]),
-dplstring(numcnv(getpid (), 10, 0)));
-continue;
-}
-nd = strt_nde(info->env, &info->argvarb[x][1], '=');
+char *y = NULL, *a = NULL;
 if (nd)
 {
-string_rpl(&(info->argvarb[x]),
-dplstring(charc_stringf(nd->str, '=') + 1));
-continue;
+y = charc_stringf(nd->str, '=');
+for (a = nd->str; a <= y; a++)
+prtcharc (*a);
+prtcharc('\'');
+prtstring(y + 1);
+prtstring("'\n");
+return (0);
 }
-string_rpl(&info->argvarb[x], dplstring(""));
+return (1);
+}
+/**
+ * thealias - Is mimics alias
+ * @info: first param
+ * Return: 0
+*/
+int thealias(info_t *info)
+{
+int i = 0;
+char *y = NULL;
+list_t *nd = NULL;
+if (info->argcount == 1)
+{
+nd = info->alias;
+while (nd)
+{
+_printal(nd);
+nd = nd->next;
 }
 return (0);
 }
-/**
- * string_rpl - Is replaces string
- * @o: first param
- * @n: the second param
- * Return: 1 if replaced, 0 otherwise
-*/
-int string_rpl(char **o, char *n)
+for (i = 1; info->argvarb[i]; i++)
 {
-free(*o);
-*o = n;
-return (1);
+y = strchr(info->argvarb[i], '=');
+if (y)
+set_alias(info, info->argvarb[i]);
+else
+_printal(strt_nde(info->alias, info->argvarb[i], '='));
+}
+return (0);
 }
