@@ -53,7 +53,7 @@ prtcharc('\n');
 return (1);
 }
 prtstring(enviro_get(info, "OLDPWD=")), prtcharc('\n');
-y = chdir((dir = enviro_get(info, "OLDPWD=")) ? dir : "/");
+y = chdir((d = enviro_get(info, "OLDPWD=")) ? d : "/");
 }
 else
 y = chdir(info->argvarb[1]);
