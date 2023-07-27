@@ -19,7 +19,7 @@ int unset_alias(info_t *info, char *i)
 {
 char *y, c;
 int z;
-y = _strchr(i, '=');
+y = strchr(i, '=');
 if (!y)
 return (1);
 c = *y;
@@ -56,8 +56,8 @@ int _printal(list_t *nd)
 char *y = NULL, *a = NULL;
 if (nd)
 {
-y = charc_stringf(nd->i, '=');
-for (a = nd->i; a <= y; a++)
+y = charc_stringf(nd->str, '=');
+for (a = nd->str; a <= y; a++)
 prtcharc (*a);
 prtcharc('\'');
 prtstring(y + 1);
